@@ -24,11 +24,20 @@ $(document).ready(function(){
 		}).addTo(mymap);
 
 
-	$.getJSON("./events.json", function(data){
-		var json_object = $.parseJSON(data);
-		console.log(json_object[1].latitude);
-
-	});
+	$.getJSON("./events.json",{
+		format: "json"
+	})	
+		.done(function(data){
+			var key;
+			for (key in data){
+				var marker = L.marker([ data[key]['latitude'], data[key]['longitude'] ]).bindPopup(data[key]['where_description']).addTo(mymap);
+				console.log(data[key]['latitude']);
+				if (key == 10){
+					continue;
+				}
+			}
+		
+		});	
 });
 </script>
 </body>
