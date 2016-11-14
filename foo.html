@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Bitirme</title>	
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.1/dist/leaflet.css" />
+<link rel="stylesheet" href="./css/foo.css" />
+<script src="https://unpkg.com/leaflet@1.0.1/dist/leaflet.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+</head>
+<body>
+<div id="mapid"></div>
+
+<script>
+$(document).ready(function(){
+
+	var mymap = L.map('mapid').setView([38.99357, 35.24414], 6);
+		L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    		maxZoom: 10,
+    		minZoom: 5
+		}).addTo(mymap);
+
+
+	$.getJSON("./events.json", function(data){
+		var json_object = $.parseJSON(data);
+		console.log(json_object[1].latitude);
+
+	});
+});
+</script>
+</body>
+</html>
