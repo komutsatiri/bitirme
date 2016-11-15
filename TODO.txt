@@ -1,0 +1,4 @@
+-Searching data using by details
+-Comparing two events 
+-Heatmap by year
+
