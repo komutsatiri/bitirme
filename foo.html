@@ -44,11 +44,11 @@ $(document).ready(function(){
 	}).addTo(map);
 
 	var control_search = new L.Control.Search({
-		position:'topright',		
+		position:'topleft',		
 		layer: marker_cluster,
 		initial: false,
 		zoom: 12,
-		marker: false
+		marker: L.circleMarker([0,0],{radius:30})
 	});
 
 	map.addControl(control_search);
@@ -61,8 +61,12 @@ $(document).ready(function(){
 			var key;
 			for (key in data){
 				var marker_title = data[key]['where_description'];
+				var marker_data  = "Type of Violence: "+data[key]['type_of_violence']+
+				"<br> Dyad Name: "+data[key]['dyad_name']+
+				"<br> Year "+data[key]['year']+
+				"<br> Source Article: "+data[key]['source_article'];
 				var marker = L.marker([ data[key]['latitude'], data[key]['longitude'] ],{title: marker_title}); 
-				marker.bindPopup(marker_title);
+				marker.bindPopup(marker_data);
 				marker_cluster.addLayer(marker);
 			}
 		
