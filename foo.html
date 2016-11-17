@@ -39,7 +39,7 @@ $(document).ready(function(){
 
 	L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 		attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    	maxZoom: 10,
+    	maxZoom: 14,
     	minZoom: 4
 	}).addTo(map);
 
@@ -60,7 +60,7 @@ $(document).ready(function(){
 		.done(function(data){
 			var key;
 			for (key in data){
-				var marker_title = data[key]['where_description'];
+				var marker_title = data[key]['dyad_name']+", "+data[key]['where_description'];
 				var marker_data  = "Type of Violence: "+data[key]['type_of_violence']+
 				"<br> Dyad Name: "+data[key]['dyad_name']+
 				"<br> Year "+data[key]['year']+

@@ -1,4 +1,6 @@
--Searching data using by details
+-Searching and filtering data using by details
 -Comparing two events 
 -Heatmap by year
-
+-A textbox which explains type of violence numbers at the bottom-right
+-The map has details more than needed, need a less colorful, less details one
+-Details which appears when a marker was clicked need to be showed in another area.tl;dr: stop using popup, create a decent box for showing details
