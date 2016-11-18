@@ -15,16 +15,7 @@
 <script src="./js/leaflet-search.src.js"></script>
 <script src="./js/leaflet.markercluster-src.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-
-
-<!--<link rel="stylesheet" type="text/css" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
-<link rel="stylesheet" type="text/css" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/0.4.0/MarkerCluster.css" />
-<link rel="stylesheet" type="text/css" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/0.4.0/MarkerCluster.Default.css" />
-
-
-<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
-<script type='text/javascript' src='http://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/0.4.0/leaflet.markercluster.js'></script>
--->
+<script src="./js/subgroup.js"></script>
 
 
 </head>
@@ -35,43 +26,98 @@
 $(document).ready(function(){
 
 	var map = L.map('mapid').setView([38.99357, 35.24414], 6);
-	var marker_cluster = new L.MarkerClusterGroup();
-
 	L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 		attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     	maxZoom: 14,
-    	minZoom: 4
+    	minZoom: 4,
 	}).addTo(map);
+
+	var dyad_753 = [];
+	var dyad_781 = [];
+	var dyad_822 = [];
+	var dyad_823 = [];
+	var dyad_899 = [];
+	var dyad_988 = [];
+
+	var marker_cluster_group = L.markerClusterGroup(),
+		cluster_753 = L.featureGroup.subGroup(marker_cluster_group),
+		cluster_781 = L.featureGroup.subGroup(marker_cluster_group),
+		cluster_822 = L.featureGroup.subGroup(marker_cluster_group),
+		cluster_823 = L.featureGroup.subGroup(marker_cluster_group),
+		cluster_899 = L.featureGroup.subGroup(marker_cluster_group),
+		cluster_988 = L.featureGroup.subGroup(marker_cluster_group),
+		control = L.control.layers(null, null, { collapsed: false });
+		//i, a, title, marker;
+
 
 	var control_search = new L.Control.Search({
 		position:'topleft',		
-		layer: marker_cluster,
+		layer: marker_cluster_group,
 		initial: false,
 		zoom: 12,
 		marker: L.circleMarker([0,0],{radius:30})
-	});
+	});	
 
-	map.addControl(control_search);
-
+	function populate(event_object,layer){
+		for (var key in event_object){
+				
+				var marker_title = event_object[key]['where_description'];
+				var marker_data  = "Type of Violence: "+event_object[key]['type_of_violence']+
+				"<br> Year "+event_object[key]['year']+
+				"<br> Source Article: "+event_object[key]['source_article'];
+				var marker = L.marker([ event_object[key]['latitude'], event_object[key]['longitude'] ],{title: marker_title}); 
+				marker.bindPopup(marker_data);
+				marker.addTo(layer);
+		}
+	}	
 	
 	$.getJSON("./events.json",{
 		format: "json"
 	})	
 		.done(function(data){
-			var key;
-			for (key in data){
-				var marker_title = data[key]['dyad_name']+", "+data[key]['where_description'];
-				var marker_data  = "Type of Violence: "+data[key]['type_of_violence']+
-				"<br> Dyad Name: "+data[key]['dyad_name']+
-				"<br> Year "+data[key]['year']+
-				"<br> Source Article: "+data[key]['source_article'];
-				var marker = L.marker([ data[key]['latitude'], data[key]['longitude'] ],{title: marker_title}); 
-				marker.bindPopup(marker_data);
-				marker_cluster.addLayer(marker);
+			//dyad classification by dyad_new_id
+			for (var index in data){
+
+				if(data[index]['dyad_new_id'] == '753')
+					dyad_753.push(data[index]); 	
+				else if(data[index]['dyad_new_id'] == '781')	
+					dyad_781.push(data[index]);	
+				else if(data[index]['dyad_new_id'] == '822')	
+					dyad_822.push(data[index]);	
+				else if(data[index]['dyad_new_id'] == '823')	
+					dyad_823.push(data[index]);	
+				else if(data[index]['dyad_new_id'] == '899')	
+					dyad_899.push(data[index]);	
+				else 
+					dyad_988.push(data[index]);	
 			}
-		
-		});	
-		map.addLayer(marker_cluster);
+			populate(dyad_753,cluster_753);
+			populate(dyad_781,cluster_781);
+			populate(dyad_822,cluster_822);
+			populate(dyad_823,cluster_823);
+			populate(dyad_899,cluster_899);
+			populate(dyad_988,cluster_988);
+
+		});		
+
+		console.log(cluster_753);	
+		control.addOverlay(cluster_753, 'Government of Iran - MEK');
+		control.addOverlay(cluster_781, 'Government of Turkey - PKK');
+		control.addOverlay(cluster_822, 'Government of Turkey - Devrimci Sol');
+		control.addOverlay(cluster_823, 'Government of Turkey - MKP');
+		control.addOverlay(cluster_899, 'Government of Russia(Soviet Union)-<br>Forces of the Caucasus Emirate');
+		control.addOverlay(cluster_988, 'PKK - Civilians');
+		control.addTo(map);
+
+		cluster_753.addTo(map);
+		cluster_781.addTo(map);
+		cluster_822.addTo(map);
+		cluster_823.addTo(map);
+		cluster_899.addTo(map);
+		cluster_988.addTo(map);
+
+ 		map.addControl(control_search); 		
+					
 });
 </script>
 </body>
