@@ -1,8 +1,10 @@
--Searching and filtering data using by details [red]
--Heatmap by year [red]
+-Database is needed [red]
+-Searching data by using by details [red] (done)
+-A slider to filter data by year [red]
+-Marker's color should change depends on type-of-violence value [red]
+-Consider event_clarity when showing details in popup [red]
+-Create a page which explains about map and data [red]
 -Comparing two events  [blue]
--A textbox which explains type of violence numbers at the bottom-right [blue]
+-A textbox which explains type of violence numbers at the bottom-right [green]
 -The map has details more than needed, need a less colorful, less details one [green]
--Details which appears when a marker was clicked need to be showed in another area.
-tl;dr: stop using popup, create a decent box to show details [green]
 -Cool tiles: http://{s}.tiles.mapbox.com/v3/gvenech.m13knc8e/{z}/{x}/{y}.png [green]
