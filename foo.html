@@ -11,11 +11,15 @@
 <link rel="stylesheet" href="./css/leaflet-search.src.css" />
 <link rel="stylesheet" href="./css/foo.css" />
 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.0-beta.2/leaflet.js"></script>
 <script src="./js/leaflet-search.src.js"></script>
 <script src="./js/leaflet.markercluster-src.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 <script src="./js/subgroup.js"></script>
+
+
+
+
 
 
 </head>
@@ -32,12 +36,12 @@ $(document).ready(function(){
     	minZoom: 4,
 	}).addTo(map);
 
-	var dyad_753 = [];
-	var dyad_781 = [];
-	var dyad_822 = [];
-	var dyad_823 = [];
-	var dyad_899 = [];
-	var dyad_988 = [];
+	var dyad_753 = [],
+	 	dyad_781 = [],
+	 	dyad_822 = [],
+	 	dyad_823 = [],
+	 	dyad_899 = [],
+	 	dyad_988 = [];
 
 	var marker_cluster_group = L.markerClusterGroup(),
 		cluster_753 = L.featureGroup.subGroup(marker_cluster_group),
@@ -47,7 +51,6 @@ $(document).ready(function(){
 		cluster_899 = L.featureGroup.subGroup(marker_cluster_group),
 		cluster_988 = L.featureGroup.subGroup(marker_cluster_group),
 		control = L.control.layers(null, null, { collapsed: false });
-		//i, a, title, marker;
 
 
 	var control_search = new L.Control.Search({
@@ -61,7 +64,7 @@ $(document).ready(function(){
 	function populate(event_object,layer){
 		for (var key in event_object){
 				
-				var marker_title = event_object[key]['where_description'];
+				var marker_title = event_object[key]['where_description']+", "+event_object[key]['year'];
 				var marker_data  = "Type of Violence: "+event_object[key]['type_of_violence']+
 				"<br> Year "+event_object[key]['year']+
 				"<br> Source Article: "+event_object[key]['source_article'];
@@ -100,7 +103,6 @@ $(document).ready(function(){
 
 		});		
 
-		console.log(cluster_753);	
 		control.addOverlay(cluster_753, 'Government of Iran - MEK');
 		control.addOverlay(cluster_781, 'Government of Turkey - PKK');
 		control.addOverlay(cluster_822, 'Government of Turkey - Devrimci Sol');
@@ -116,8 +118,8 @@ $(document).ready(function(){
 		cluster_899.addTo(map);
 		cluster_988.addTo(map);
 
- 		map.addControl(control_search); 		
-					
+ 		map.addControl(control_search);
+
 });
 </script>
 </body>
