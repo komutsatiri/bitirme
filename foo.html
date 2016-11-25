@@ -26,7 +26,7 @@
 <body>
 <div id="mapid"></div>
 
-<script>
+<script type="text/javascript">
 $(document).ready(function(){
 
 	var map = L.map('mapid').setView([38.99357, 35.24414], 6);
@@ -64,35 +64,36 @@ $(document).ready(function(){
 	function populate(event_object,layer){
 		for (var key in event_object){
 				
-				var marker_title = event_object[key]['where_description']+", "+event_object[key]['year'];
+				/*var marker_title = event_object[key]['where_description']+", "+event_object[key]['year'];
 				var marker_data  = "Type of Violence: "+event_object[key]['type_of_violence']+
 				"<br> Year "+event_object[key]['year']+
-				"<br> Source Article: "+event_object[key]['source_article'];
-				var marker = L.marker([ event_object[key]['latitude'], event_object[key]['longitude'] ],{title: marker_title}); 
-				marker.bindPopup(marker_data);
+				"<br> Source Article: "+event_object[key]['source_article'];*/
+				var marker = L.marker([ event_object[key]['lat'], event_object[key]['lon'] ]);//,{title: marker_title}); 
+				//marker.bindPopup(marker_data);
 				marker.addTo(layer);
 		}
 	}	
 	
-	$.getJSON("./events.json",{
+	$.getJSON("http://localhost:5000/markers",{
 		format: "json"
 	})	
 		.done(function(data){
 			//dyad classification by dyad_new_id
-			for (var index in data){
+			var arr = data.results;
+			for (var index in arr){
 
-				if(data[index]['dyad_new_id'] == '753')
-					dyad_753.push(data[index]); 	
-				else if(data[index]['dyad_new_id'] == '781')	
-					dyad_781.push(data[index]);	
-				else if(data[index]['dyad_new_id'] == '822')	
-					dyad_822.push(data[index]);	
-				else if(data[index]['dyad_new_id'] == '823')	
-					dyad_823.push(data[index]);	
-				else if(data[index]['dyad_new_id'] == '899')	
-					dyad_899.push(data[index]);	
+				if(arr[index]['dyad_new_id'] == '753')
+					dyad_753.push(arr[index]); 	
+				else if(arr[index]['dyad_new_id'] == '781')	
+					dyad_781.push(arr[index]);	
+				else if(arr[index]['dyad_new_id'] == '822')	
+					dyad_822.push(arr[index]);	
+				else if(arr[index]['dyad_new_id'] == '823')	
+					dyad_823.push(arr[index]);	
+				else if(arr[index]['dyad_new_id'] == '899')	
+					dyad_899.push(arr[index]);	
 				else 
-					dyad_988.push(data[index]);	
+					dyad_988.push(arr[index]);	
 			}
 			populate(dyad_753,cluster_753);
 			populate(dyad_781,cluster_781);
@@ -101,7 +102,11 @@ $(document).ready(function(){
 			populate(dyad_899,cluster_899);
 			populate(dyad_988,cluster_988);
 
-		});		
+		})
+		.fail(function( jqxhr, textStatus, error ) {
+   			var err = textStatus + ", " + error;
+			console.log( "Request Failed: " + err );
+		});
 
 		control.addOverlay(cluster_753, 'Government of Iran - MEK');
 		control.addOverlay(cluster_781, 'Government of Turkey - PKK');
