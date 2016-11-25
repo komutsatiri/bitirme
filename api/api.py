@@ -15,7 +15,7 @@ def get_markers():
 	collection = client.conflict_db.events
 	output = []
 	for q in collection.find({},{"_id":False}).limit(4000):
-		output.append({'lat' : q['latitude'], 'lon' : q['longitude'], 'dyad_new_id' : q['dyad_new_id']})
+		output.append({'id' : q['id'], 'lat' : q['latitude'], 'lon' : q['longitude'], 'dyad_new_id' : q['dyad_new_id']})
 	return jsonify({"results" : output})
 
 

@@ -17,11 +17,6 @@
 <script src="./js/leaflet.markercluster-src.js"></script>
 <script src="./js/subgroup.js"></script>
 
-
-
-
-
-
 </head>
 <body>
 <div id="mapid"></div>
@@ -63,14 +58,15 @@ $(document).ready(function(){
 
 	function populate(event_object,layer){
 		for (var key in event_object){
-				
-				/*var marker_title = event_object[key]['where_description']+", "+event_object[key]['year'];
-				var marker_data  = "Type of Violence: "+event_object[key]['type_of_violence']+
+				var event = event_object[key];
+				//var marker_title = event_object[key]['id'];//+", "+event_object[key]['year'];
+				/*var marker_data  = "Type of Violence: "+event_object[key]['type_of_violence']+
 				"<br> Year "+event_object[key]['year']+
 				"<br> Source Article: "+event_object[key]['source_article'];*/
-				var marker = L.marker([ event_object[key]['lat'], event_object[key]['lon'] ]);//,{title: marker_title}); 
+				var marker = L.marker([event.lat, event.lon],options={title : event.id});
 				//marker.bindPopup(marker_data);
 				marker.addTo(layer);
+				
 		}
 	}	
 	
@@ -102,6 +98,7 @@ $(document).ready(function(){
 			populate(dyad_899,cluster_899);
 			populate(dyad_988,cluster_988);
 
+
 		})
 		.fail(function( jqxhr, textStatus, error ) {
    			var err = textStatus + ", " + error;
@@ -124,6 +121,17 @@ $(document).ready(function(){
 		cluster_988.addTo(map);
 
  		map.addControl(control_search);
+ 		
+
+		marker_cluster_group.on("click", function (e) {
+			
+			
+			var el = $(e.layer.options),
+       			title = el.attr('title');
+  			console.log(title);
+      		
+      	
+		});
 
 });
 </script>

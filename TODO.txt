@@ -6,5 +6,7 @@
 -Create a page which explains about map and data [red]
 -Comparing two events  [blue]
 -A textbox which explains type of violence numbers at the bottom-right [green]
--The map has details more than needed, need a less colorful, less details one [green]
+-The tile has details more than needed, need a less colorful, less details one [green]
 -Cool tiles: http://{s}.tiles.mapbox.com/v3/gvenech.m13knc8e/{z}/{x}/{y}.png [green]
+-When just one marker presents, load an image explains that there is only an event at the location 
+[blue]
