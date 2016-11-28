@@ -60,11 +60,8 @@ $(document).ready(function(){
 		for (var key in event_object){
 				var event = event_object[key];
 				//var marker_title = event_object[key]['id'];//+", "+event_object[key]['year'];
-				/*var marker_data  = "Type of Violence: "+event_object[key]['type_of_violence']+
-				"<br> Year "+event_object[key]['year']+
-				"<br> Source Article: "+event_object[key]['source_article'];*/
 				var marker = L.marker([event.lat, event.lon],options={title : event.id});
-				//marker.bindPopup(marker_data);
+				marker.bindPopup("init");
 				marker.addTo(layer);
 				
 		}
@@ -123,15 +120,28 @@ $(document).ready(function(){
  		map.addControl(control_search);
  		
 
-		marker_cluster_group.on("click", function (e) {
-			
-			
+		marker_cluster_group.on('mouseover', function(e){
+
 			var el = $(e.layer.options),
-       			title = el.attr('title');
-  			console.log(title);
-      		
-      	
+				title = el.attr("title");
+			var popup_content = e.layer._popup._content;
+			
+			if (popup_content == 'init')
+			{	
+				$.getJSON("http://localhost:5000/details/"+title,{
+					format: "json"
+				})	
+				.done(function(data){
+			
+					e.layer._popup._content = data.result.source_article;
+				})
+				.fail(function( jqxhr, textStatus, error ) {
+   					var err = textStatus + ", " + error;
+					console.log( "Request Failed: " + err );
+				});
+			}
 		});
+ 		
 
 });
 </script>
