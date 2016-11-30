@@ -14,8 +14,9 @@ collection = client.conflict_db.events
 @app.route('/markers', methods=['GET'])
 def get_markers():
 	output = []
-	for q in collection.find({},{'_id':False}).limit(4000):
-		output.append({'id' : q['id'], 'lat' : q['latitude'], 'lon' : q['longitude'], 'dyad_new_id' : q['dyad_new_id']})
+	for q in collection.find({},{'_id':False}).sort([('year',1)]).limit(4000):
+		output.append({'id' : q['id'], 'lat' : q['latitude'], 'lon' : q['longitude'],
+						'dyad_new_id' : q['dyad_new_id'], 'time' : q['date_start']})
 	return jsonify({'results' : output})
 
 @app.route('/details/<int:event_id>', methods=['GET'])

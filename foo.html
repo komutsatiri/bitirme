@@ -6,24 +6,34 @@
 
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.0-beta.2/leaflet.css" />
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
 <link rel="stylesheet" href="./css/MarkerCluster.css" />
 <link rel="stylesheet" href="./css/MarkerCluster.Default.css" />
 <link rel="stylesheet" href="./css/leaflet-search.src.css" />
 <link rel="stylesheet" href="./css/foo.css" />
-
+<!--jquery js-->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+	  	integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
+		crossorigin="anonymous">
+</script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.2/jquery.ui.touch-punch.min.js"></script>	
+<!--leaflet js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.0-beta.2/leaflet.js"></script>
 <script src="./js/leaflet-search.src.js"></script>
 <script src="./js/leaflet.markercluster-src.js"></script>
 <script src="./js/subgroup.js"></script>
-
+<script src="https://unpkg.com/leaflet.markercluster.layersupport@1.0.2/dist/leaflet.markercluster.layersupport.js"></script>
+<script src="./js/leaflet-sliderControl.js"></script>
 </head>
+
 <body>
 <div id="mapid"></div>
 
 <script type="text/javascript">
 $(document).ready(function(){
 
+	
 	var map = L.map('mapid').setView([38.99357, 35.24414], 6);
 	L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 		attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
@@ -31,117 +41,63 @@ $(document).ready(function(){
     	minZoom: 4,
 	}).addTo(map);
 
-	var dyad_753 = [],
-	 	dyad_781 = [],
-	 	dyad_822 = [],
-	 	dyad_823 = [],
-	 	dyad_899 = [],
-	 	dyad_988 = [];
 
-	var marker_cluster_group = L.markerClusterGroup(),
-		cluster_753 = L.featureGroup.subGroup(marker_cluster_group),
-		cluster_781 = L.featureGroup.subGroup(marker_cluster_group),
-		cluster_822 = L.featureGroup.subGroup(marker_cluster_group),
-		cluster_823 = L.featureGroup.subGroup(marker_cluster_group),
-		cluster_899 = L.featureGroup.subGroup(marker_cluster_group),
-		cluster_988 = L.featureGroup.subGroup(marker_cluster_group),
-		control = L.control.layers(null, null, { collapsed: false });
+	var markers = L.layerGroup();
+	var layer_support = L.markerClusterGroup.layerSupport();
 
-
-	var control_search = new L.Control.Search({
-		position:'topleft',		
-		layer: marker_cluster_group,
-		initial: false,
-		zoom: 12,
-		marker: L.circleMarker([0,0],{radius:30})
-	});	
-
+	var sliderControl = L.control.sliderControl({
+		position: "topright",
+   		layer: markers,
+   		follow: 600
+   	});
+	
 	function populate(event_object,layer){
 		for (var key in event_object){
 				var event = event_object[key];
 				//var marker_title = event_object[key]['id'];//+", "+event_object[key]['year'];
-				var marker = L.marker([event.lat, event.lon],options={title : event.id});
+				var marker = L.marker([event.lat, event.lon],{title : event.id, time: event.time.toString()});
 				marker.bindPopup("init");
-				marker.addTo(layer);
-				
+				marker.addTo(layer);	
 		}
+		layer_support.addTo(map).checkIn(layer);
+		map.addControl(sliderControl);
+		sliderControl.startSlider();		
 	}	
 	
 	$.getJSON("http://localhost:5000/markers",{
 		format: "json"
 	})	
-		.done(function(data){
-			//dyad classification by dyad_new_id
-			var arr = data.results;
-			for (var index in arr){
-
-				if(arr[index]['dyad_new_id'] == '753')
-					dyad_753.push(arr[index]); 	
-				else if(arr[index]['dyad_new_id'] == '781')	
-					dyad_781.push(arr[index]);	
-				else if(arr[index]['dyad_new_id'] == '822')	
-					dyad_822.push(arr[index]);	
-				else if(arr[index]['dyad_new_id'] == '823')	
-					dyad_823.push(arr[index]);	
-				else if(arr[index]['dyad_new_id'] == '899')	
-					dyad_899.push(arr[index]);	
-				else 
-					dyad_988.push(arr[index]);	
-			}
-			populate(dyad_753,cluster_753);
-			populate(dyad_781,cluster_781);
-			populate(dyad_822,cluster_822);
-			populate(dyad_823,cluster_823);
-			populate(dyad_899,cluster_899);
-			populate(dyad_988,cluster_988);
-
-
-		})
-		.fail(function( jqxhr, textStatus, error ) {
-   			var err = textStatus + ", " + error;
-			console.log( "Request Failed: " + err );
-		});
-
-		control.addOverlay(cluster_753, 'Government of Iran - MEK');
-		control.addOverlay(cluster_781, 'Government of Turkey - PKK');
-		control.addOverlay(cluster_822, 'Government of Turkey - Devrimci Sol');
-		control.addOverlay(cluster_823, 'Government of Turkey - MKP');
-		control.addOverlay(cluster_899, 'Government of Russia(Soviet Union)-<br>Forces of the Caucasus Emirate');
-		control.addOverlay(cluster_988, 'PKK - Civilians');
-		control.addTo(map);
-
-		cluster_753.addTo(map);
-		cluster_781.addTo(map);
-		cluster_822.addTo(map);
-		cluster_823.addTo(map);
-		cluster_899.addTo(map);
-		cluster_988.addTo(map);
-
- 		map.addControl(control_search);
- 		
-
-		marker_cluster_group.on('mouseover', function(e){
-
-			var el = $(e.layer.options),
-				title = el.attr("title");
-			var popup_content = e.layer._popup._content;
+	.done(function(data){
 			
-			if (popup_content == 'init')
-			{	
-				$.getJSON("http://localhost:5000/details/"+title,{
-					format: "json"
-				})	
-				.done(function(data){
+		populate(data.results,markers);
+	})
+	.fail(function( jqxhr, textStatus, error ) {
+   		var err = textStatus + ", " + error;
+		console.log( "Request failed while getting markers: " + err );
+	});
+
+
+	layer_support.on('mouseover', function(e){
+	
+		var el = $(e.layer.options),
+			title = el.attr("title");
+		var popup_content = e.layer._popup._content;
 			
-					e.layer._popup._content = data.result.source_article;
-				})
-				.fail(function( jqxhr, textStatus, error ) {
-   					var err = textStatus + ", " + error;
-					console.log( "Request Failed: " + err );
-				});
-			}
-		});
- 		
+		if (popup_content == 'init')
+		{	
+			$.getJSON("http://localhost:5000/details/"+title,{
+				format: "json"
+			})	
+			.done(function(data){
+			
+				e.layer._popup._content = data.result.source_article;
+			})
+			.fail(function( jqxhr, textStatus, error ) {
+   				var err = textStatus + ", " + error;
+				console.log( "Request failed while getting details: " + err );
+			});
+		}
+	});
 
 });
 </script>
