@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>Bitirme</title>	
 
-
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.0-beta.2/leaflet.css" />
 <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
 <link rel="stylesheet" href="./css/MarkerCluster.css" />
@@ -25,10 +24,12 @@
 <script src="./js/subgroup.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster.layersupport@1.0.2/dist/leaflet.markercluster.layersupport.js"></script>
 <script src="./js/leaflet-sliderControl.js"></script>
+<script src="./js/dyad-control.js"></script>
 </head>
 
 <body>
 <div id="mapid"></div>
+
 
 <script type="text/javascript">
 $(document).ready(function(){
@@ -69,12 +70,17 @@ $(document).ready(function(){
 	})	
 	.done(function(data){
 			
-		populate(data.results,markers);
+		populate(data.result,markers);
 	})
 	.fail(function( jqxhr, textStatus, error ) {
    		var err = textStatus + ", " + error;
 		console.log( "Request failed while getting markers: " + err );
 	});
+
+	
+	map.addControl(new DyadControl('dyad_list',
+		{position: 'topright'}
+	));
 
 
 	layer_support.on('mouseover', function(e){
