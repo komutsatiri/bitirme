@@ -21,10 +21,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.0-beta.2/leaflet.js"></script>
 <script src="./js/leaflet-search.src.js"></script>
 <script src="./js/leaflet.markercluster-src.js"></script>
-<script src="./js/subgroup.js"></script>
+<!--<script src="./js/subgroup.js"></script>-->
 <script src="https://unpkg.com/leaflet.markercluster.layersupport@1.0.2/dist/leaflet.markercluster.layersupport.js"></script>
 <script src="./js/leaflet-sliderControl.js"></script>
-<script src="./js/dyad-control.js"></script>
+
 </head>
 
 <body>
@@ -34,7 +34,7 @@
 <script type="text/javascript">
 $(document).ready(function(){
 
-	
+	/*********** Initial config ***********/
 	var map = L.map('mapid').setView([38.99357, 35.24414], 6);
 	L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 		attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
@@ -42,46 +42,138 @@ $(document).ready(function(){
     	minZoom: 4,
 	}).addTo(map);
 
-
+	//var marker_title = event_object[key]['id'];//+", "+event_object[key]['year'];
 	var markers = L.layerGroup();
 	var layer_support = L.markerClusterGroup.layerSupport();
-
-	var sliderControl = L.control.sliderControl({
-		position: "topright",
-   		layer: markers,
-   		follow: 600
-   	});
+	var slider_control = null;
 	
+   	/****************************************/
+
+	/*********** Dropdown menus init config *************/
+	var dyad_control = L.control({position: 'topright'});
+	var death_control = L.control({position: 'topright'});
+
+	dyad_control.onAdd = function (map) {
+
+		var container = L.DomUtil.create('div', 'dyad_control');
+		$.getJSON("http://localhost:5000/dyads",{
+			format: "json",
+		})	 
+		.done(function(data){
+				
+			var temp = data.result		
+			var dyad_select = document.createElement('select');
+			dyad_select.id = "dyad_list"; 
+			dyad_select.onchange = dyad_changed; 
+			$.each(temp, function(i,item){
+				dyad_select[dyad_select.length] = new Option(item, i, false, false);
+			});
+			container.appendChild(dyad_select);
+			//allow a user to select a single option
+			container.firstChild.selectedIndex = -1	;
+			container.firstChild.onmousedown = 
+			container.firstChild.ondblclick = 
+			L.DomEvent.stopPropagation;
+							
+		});
+			
+	return container;
+	};
+
+	death_control.onAdd = function (map) {
+
+		var container = L.DomUtil.create('div', 'death_control');
+		$.getJSON("http://localhost:5000/dyads",{
+			format: "json",
+		})	 
+		.done(function(data){
+				
+			var temp = data.result		
+			var dyad_select = document.createElement('select');
+			dyad_select.id = "death_list"; 
+			dyad_select.onchange = death_changed; 
+			$.each(temp, function(i,item){
+				dyad_select[dyad_select.length] = new Option(item, i, false, false);
+			});
+			container.appendChild(dyad_select);
+			//allow a user to select a single option
+			container.firstChild.selectedIndex = -1	;
+			container.firstChild.onmousedown = 
+			container.firstChild.ondblclick = 
+			L.DomEvent.stopPropagation;
+							
+		});
+			
+	return container;
+	};
+	/****************************************/
+
+	/*********** Populate markers **********/
 	function populate(event_object,layer){
 		for (var key in event_object){
 				var event = event_object[key];
-				//var marker_title = event_object[key]['id'];//+", "+event_object[key]['year'];
 				var marker = L.marker([event.lat, event.lon],{title : event.id, time: event.time.toString()});
 				marker.bindPopup("init");
-				marker.addTo(layer);	
+				marker.addTo(layer);
 		}
-		layer_support.addTo(map).checkIn(layer);
-		map.addControl(sliderControl);
-		sliderControl.startSlider();		
+		layer_support.addTo(map).checkIn(layer);	
 	}	
-	
-	$.getJSON("http://localhost:5000/markers",{
+
+		
+	/*$.getJSON("http://localhost:5000/markers",{
 		format: "json"
 	})	
 	.done(function(data){
-			
+		
 		populate(data.result,markers);
 	})
 	.fail(function( jqxhr, textStatus, error ) {
    		var err = textStatus + ", " + error;
 		console.log( "Request failed while getting markers: " + err );
 	});
+	/****************************************/
 
-	
-	map.addControl(new DyadControl('dyad_list',
-		{position: 'topright'}
-	));
+	/*********** Show dropdown menus*********/
+	dyad_control.addTo(map);
+	death_control.addTo(map);
+	/****************************************/
 
+	/************ Event listeners  ************/
+	function dyad_changed(e){
+
+		markers = L.layerGroup();
+		var dyad_val = $('#dyad_list').val();
+		layer_support.clearLayers();
+		//this  block does the trich, saved my day
+		if (slider_control != null ){
+
+			map.removeControl(slider_control);
+		}
+		$.getJSON("http://localhost:5000/markers/"+dyad_val,{
+			format: "json"
+		})	
+		.done(function(data){
+
+			populate(data.result,markers);
+			slider_control = L.control.sliderControl({
+				position: "topright",
+   				layer: markers,
+   				follow: 600,
+   				range: true
+  	 		});
+			map.addControl(slider_control);
+			slider_control.startSlider();
+			console.log(markers);
+		})
+		.fail(function( jqxhr, textStatus, error ) {
+   			var err = textStatus + ", " + error;
+			console.log( "Request failed while getting markers: " + err );
+		});
+	}
+	function death_changed(e){
+		console.log('debug');
+		
+	}
 
 	layer_support.on('mouseover', function(e){
 	
@@ -96,7 +188,7 @@ $(document).ready(function(){
 			})	
 			.done(function(data){
 			
-				e.layer._popup._content = data.result.source_article;
+				e.layer._popup._content = data.result.source_article + '<br>' + data.result.dyad_name;
 			})
 			.fail(function( jqxhr, textStatus, error ) {
    				var err = textStatus + ", " + error;
@@ -104,6 +196,7 @@ $(document).ready(function(){
 			});
 		}
 	});
+	/******************************************/
 
 });
 </script>
