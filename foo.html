@@ -110,28 +110,33 @@ $(document).ready(function(){
 
 	/*********** Populate markers **********/
 	function populate(event_object,layer){
+		//if 'markers' layer has markers in it, delete them first
+		markers = L.layerGroup();
+		//then clear the map from markers	
+		layer_support.clearLayers();
 		for (var key in event_object){
 				var event = event_object[key];
 				var marker = L.marker([event.lat, event.lon],{title : event.id, time: event.time.toString()});
 				marker.bindPopup("init");
 				marker.addTo(layer);
 		}
-		layer_support.addTo(map).checkIn(layer);	
-	}	
+		// add new clustered markers to the map
+		layer_support.addTo(map).checkIn(layer);
+		//if slider_control is defined, remove from the map
+		if (slider_control != null ){
 
-		
-	/*$.getJSON("http://localhost:5000/markers",{
-		format: "json"
-	})	
-	.done(function(data){
-		
-		populate(data.result,markers);
-	})
-	.fail(function( jqxhr, textStatus, error ) {
-   		var err = textStatus + ", " + error;
-		console.log( "Request failed while getting markers: " + err );
-	});
-	/****************************************/
+			map.removeControl(slider_control);
+		}
+		// define slider_control again, add to the map
+		slider_control = L.control.sliderControl({
+				position: "topright",
+   				layer: layer,
+   				follow: 600,
+   				range: true
+  	 		});
+			map.addControl(slider_control);
+			slider_control.startSlider();	
+	}	
 
 	/*********** Show dropdown menus*********/
 	dyad_control.addTo(map);
@@ -141,29 +146,14 @@ $(document).ready(function(){
 	/************ Event listeners  ************/
 	function dyad_changed(e){
 
-		markers = L.layerGroup();
 		var dyad_val = $('#dyad_list').val();
-		layer_support.clearLayers();
-		//this  block does the trich, saved my day
-		if (slider_control != null ){
-
-			map.removeControl(slider_control);
-		}
 		$.getJSON("http://localhost:5000/markers/"+dyad_val,{
 			format: "json"
 		})	
 		.done(function(data){
 
 			populate(data.result,markers);
-			slider_control = L.control.sliderControl({
-				position: "topright",
-   				layer: markers,
-   				follow: 600,
-   				range: true
-  	 		});
-			map.addControl(slider_control);
-			slider_control.startSlider();
-			console.log(markers);
+			
 		})
 		.fail(function( jqxhr, textStatus, error ) {
    			var err = textStatus + ", " + error;
