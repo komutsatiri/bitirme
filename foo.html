@@ -21,21 +21,20 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.0-beta.2/leaflet.js"></script>
 <script src="./js/leaflet-search.src.js"></script>
 <script src="./js/leaflet.markercluster-src.js"></script>
-<!--<script src="./js/subgroup.js"></script>-->
 <script src="https://unpkg.com/leaflet.markercluster.layersupport@1.0.2/dist/leaflet.markercluster.layersupport.js"></script>
 <script src="./js/leaflet-sliderControl.js"></script>
 
 </head>
 
 <body>
-<div id="mapid"></div>
+<div id="mapi"></div>
 
 
 <script type="text/javascript">
 $(document).ready(function(){
 
 	/*********** Initial config ***********/
-	var map = L.map('mapid').setView([38.99357, 35.24414], 6);
+	var map = L.map('mapi').setView([38.99357, 35.24414], 6);
 	L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 		attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     	maxZoom: 14,
@@ -46,6 +45,7 @@ $(document).ready(function(){
 	var markers = L.layerGroup();
 	var layer_support = L.markerClusterGroup.layerSupport();
 	var slider_control = null;
+	var dyad_val = null;
 	
    	/****************************************/
 
@@ -83,19 +83,19 @@ $(document).ready(function(){
 	death_control.onAdd = function (map) {
 
 		var container = L.DomUtil.create('div', 'death_control');
-		$.getJSON("http://localhost:5000/dyads",{
+		$.getJSON("http://localhost:5000/death_range",{
 			format: "json",
 		})	 
 		.done(function(data){
 				
 			var temp = data.result		
-			var dyad_select = document.createElement('select');
-			dyad_select.id = "death_list"; 
-			dyad_select.onchange = death_changed; 
+			var death_select = document.createElement('select');
+			death_select.id = "death_list"; 
+			death_select.onchange = death_changed; 
 			$.each(temp, function(i,item){
-				dyad_select[dyad_select.length] = new Option(item, i, false, false);
+				death_select[death_select.length] = new Option(item, item, false, false);
 			});
-			container.appendChild(dyad_select);
+			container.appendChild(death_select);
 			//allow a user to select a single option
 			container.firstChild.selectedIndex = -1	;
 			container.firstChild.onmousedown = 
@@ -146,8 +146,8 @@ $(document).ready(function(){
 	/************ Event listeners  ************/
 	function dyad_changed(e){
 
-		var dyad_val = $('#dyad_list').val();
-		$.getJSON("http://localhost:5000/markers/"+dyad_val,{
+		dyad_val = $('#dyad_list').val();
+		$.getJSON("http://localhost:5000/markers/dyad="+dyad_val,{
 			format: "json"
 		})	
 		.done(function(data){
@@ -161,8 +161,28 @@ $(document).ready(function(){
 		});
 	}
 	function death_changed(e){
-		console.log('debug');
-		
+		var death_val = $('#death_list').val();
+		var min_max = death_val.split('-');
+		console.log(dyad_val);
+		if(dyad_val != null)
+		{
+			$.getJSON("http://localhost:5000/markers/dyad="+dyad_val
+				+"&min="+min_max[0]+"&max="+min_max[1],{
+			format: "json"
+			})	
+			.done(function(data){
+
+			populate(data.result,markers);
+			
+			})
+			.fail(function( jqxhr, textStatus, error ) {
+   				var err = textStatus + ", " + error;
+				console.log( "Request failed while getting markers: " + err );
+			});	
+		}
+		else
+			console.log('please select dyad first');
+
 	}
 
 	layer_support.on('mouseover', function(e){
