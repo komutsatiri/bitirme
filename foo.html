@@ -4,121 +4,209 @@
 <meta charset="UTF-8">
 <title>Bitirme</title>	
 
-
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.0-beta.2/leaflet.css" />
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
 <link rel="stylesheet" href="./css/MarkerCluster.css" />
 <link rel="stylesheet" href="./css/MarkerCluster.Default.css" />
 <link rel="stylesheet" href="./css/leaflet-search.src.css" />
 <link rel="stylesheet" href="./css/foo.css" />
-
+<!--jquery js-->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+	  	integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
+		crossorigin="anonymous">
+</script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.2/jquery.ui.touch-punch.min.js"></script>	
+<!--leaflet js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.0-beta.2/leaflet.js"></script>
 <script src="./js/leaflet-search.src.js"></script>
 <script src="./js/leaflet.markercluster-src.js"></script>
-<script src="./js/subgroup.js"></script>
-
-
-
-
-
+<script src="https://unpkg.com/leaflet.markercluster.layersupport@1.0.2/dist/leaflet.markercluster.layersupport.js"></script>
+<script src="./js/leaflet-sliderControl.js"></script>
 
 </head>
-<body>
-<div id="mapid"></div>
 
-<script>
+<body>
+<div id="mapi"></div>
+
+
+<script type="text/javascript">
 $(document).ready(function(){
 
-	var map = L.map('mapid').setView([38.99357, 35.24414], 6);
+	/*********** Initial config ***********/
+	var map = L.map('mapi').setView([38.99357, 35.24414], 6);
 	L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 		attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     	maxZoom: 14,
     	minZoom: 4,
 	}).addTo(map);
 
-	var dyad_753 = [],
-	 	dyad_781 = [],
-	 	dyad_822 = [],
-	 	dyad_823 = [],
-	 	dyad_899 = [],
-	 	dyad_988 = [];
+	//var marker_title = event_object[key]['id'];//+", "+event_object[key]['year'];
+	var markers = L.layerGroup();
+	var layer_support = L.markerClusterGroup.layerSupport();
+	var slider_control = null;
+	var dyad_val = null;
+	
+   	/****************************************/
 
-	var marker_cluster_group = L.markerClusterGroup(),
-		cluster_753 = L.featureGroup.subGroup(marker_cluster_group),
-		cluster_781 = L.featureGroup.subGroup(marker_cluster_group),
-		cluster_822 = L.featureGroup.subGroup(marker_cluster_group),
-		cluster_823 = L.featureGroup.subGroup(marker_cluster_group),
-		cluster_899 = L.featureGroup.subGroup(marker_cluster_group),
-		cluster_988 = L.featureGroup.subGroup(marker_cluster_group),
-		control = L.control.layers(null, null, { collapsed: false });
+	/*********** Dropdown menus init config *************/
+	var dyad_control = L.control({position: 'topright'});
+	var death_control = L.control({position: 'topright'});
 
+	dyad_control.onAdd = function (map) {
 
-	var control_search = new L.Control.Search({
-		position:'topleft',		
-		layer: marker_cluster_group,
-		initial: false,
-		zoom: 12,
-		marker: L.circleMarker([0,0],{radius:30})
-	});	
-
-	function populate(event_object,layer){
-		for (var key in event_object){
+		var container = L.DomUtil.create('div', 'dyad_control');
+		$.getJSON("http://localhost:5000/dyads",{
+			format: "json",
+		})	 
+		.done(function(data){
 				
-				var marker_title = event_object[key]['where_description']+", "+event_object[key]['year'];
-				var marker_data  = "Type of Violence: "+event_object[key]['type_of_violence']+
-				"<br> Year "+event_object[key]['year']+
-				"<br> Source Article: "+event_object[key]['source_article'];
-				var marker = L.marker([ event_object[key]['latitude'], event_object[key]['longitude'] ],{title: marker_title}); 
-				marker.bindPopup(marker_data);
+			var temp = data.result		
+			var dyad_select = document.createElement('select');
+			dyad_select.id = "dyad_list"; 
+			dyad_select.onchange = dyad_changed; 
+			$.each(temp, function(i,item){
+				dyad_select[dyad_select.length] = new Option(item, i, false, false);
+			});
+			container.appendChild(dyad_select);
+			//allow a user to select a single option
+			container.firstChild.selectedIndex = -1	;
+			container.firstChild.onmousedown = 
+			container.firstChild.ondblclick = 
+			L.DomEvent.stopPropagation;
+							
+		});
+			
+	return container;
+	};
+
+	death_control.onAdd = function (map) {
+
+		var container = L.DomUtil.create('div', 'death_control');
+		$.getJSON("http://localhost:5000/death_range",{
+			format: "json",
+		})	 
+		.done(function(data){
+				
+			var temp = data.result		
+			var death_select = document.createElement('select');
+			death_select.id = "death_list"; 
+			death_select.onchange = death_changed; 
+			$.each(temp, function(i,item){
+				death_select[death_select.length] = new Option(item, item, false, false);
+			});
+			container.appendChild(death_select);
+			//allow a user to select a single option
+			container.firstChild.selectedIndex = -1	;
+			container.firstChild.onmousedown = 
+			container.firstChild.ondblclick = 
+			L.DomEvent.stopPropagation;
+							
+		});
+			
+	return container;
+	};
+	/****************************************/
+
+	/*********** Populate markers **********/
+	function populate(event_object,layer){
+		//if 'markers' layer has markers in it, delete them first
+		markers = L.layerGroup();
+		//then clear the map from markers	
+		layer_support.clearLayers();
+		for (var key in event_object){
+				var event = event_object[key];
+				var marker = L.marker([event.lat, event.lon],{title : event.id, time: event.time.toString()});
+				marker.bindPopup("init");
 				marker.addTo(layer);
 		}
+		// add new clustered markers to the map
+		layer_support.addTo(map).checkIn(layer);
+		//if slider_control is defined, remove from the map
+		if (slider_control != null ){
+
+			map.removeControl(slider_control);
+		}
+		// define slider_control again, add to the map
+		slider_control = L.control.sliderControl({
+				position: "topright",
+   				layer: layer,
+   				follow: 600,
+   				range: true
+  	 		});
+			map.addControl(slider_control);
+			slider_control.startSlider();	
 	}	
-	
-	$.getJSON("./events.json",{
-		format: "json"
-	})	
+
+	/*********** Show dropdown menus*********/
+	dyad_control.addTo(map);
+	death_control.addTo(map);
+	/****************************************/
+
+	/************ Event listeners  ************/
+	function dyad_changed(e){
+
+		dyad_val = $('#dyad_list').val();
+		$.getJSON("http://localhost:5000/markers/dyad="+dyad_val,{
+			format: "json"
+		})	
 		.done(function(data){
-			//dyad classification by dyad_new_id
-			for (var index in data){
 
-				if(data[index]['dyad_new_id'] == '753')
-					dyad_753.push(data[index]); 	
-				else if(data[index]['dyad_new_id'] == '781')	
-					dyad_781.push(data[index]);	
-				else if(data[index]['dyad_new_id'] == '822')	
-					dyad_822.push(data[index]);	
-				else if(data[index]['dyad_new_id'] == '823')	
-					dyad_823.push(data[index]);	
-				else if(data[index]['dyad_new_id'] == '899')	
-					dyad_899.push(data[index]);	
-				else 
-					dyad_988.push(data[index]);	
-			}
-			populate(dyad_753,cluster_753);
-			populate(dyad_781,cluster_781);
-			populate(dyad_822,cluster_822);
-			populate(dyad_823,cluster_823);
-			populate(dyad_899,cluster_899);
-			populate(dyad_988,cluster_988);
+			populate(data.result,markers);
+			
+		})
+		.fail(function( jqxhr, textStatus, error ) {
+   			var err = textStatus + ", " + error;
+			console.log( "Request failed while getting markers: " + err );
+		});
+	}
+	function death_changed(e){
+		var death_val = $('#death_list').val();
+		var min_max = death_val.split('-');
+		console.log(dyad_val);
+		if(dyad_val != null)
+		{
+			$.getJSON("http://localhost:5000/markers/dyad="+dyad_val
+				+"&min="+min_max[0]+"&max="+min_max[1],{
+			format: "json"
+			})	
+			.done(function(data){
 
-		});		
+			populate(data.result,markers);
+			
+			})
+			.fail(function( jqxhr, textStatus, error ) {
+   				var err = textStatus + ", " + error;
+				console.log( "Request failed while getting markers: " + err );
+			});	
+		}
+		else
+			console.log('please select dyad first');
 
-		control.addOverlay(cluster_753, 'Government of Iran - MEK');
-		control.addOverlay(cluster_781, 'Government of Turkey - PKK');
-		control.addOverlay(cluster_822, 'Government of Turkey - Devrimci Sol');
-		control.addOverlay(cluster_823, 'Government of Turkey - MKP');
-		control.addOverlay(cluster_899, 'Government of Russia(Soviet Union)-<br>Forces of the Caucasus Emirate');
-		control.addOverlay(cluster_988, 'PKK - Civilians');
-		control.addTo(map);
+	}
 
-		cluster_753.addTo(map);
-		cluster_781.addTo(map);
-		cluster_822.addTo(map);
-		cluster_823.addTo(map);
-		cluster_899.addTo(map);
-		cluster_988.addTo(map);
-
- 		map.addControl(control_search);
+	layer_support.on('mouseover', function(e){
+	
+		var el = $(e.layer.options),
+			title = el.attr("title");
+		var popup_content = e.layer._popup._content;
+			
+		if (popup_content == 'init')
+		{	
+			$.getJSON("http://localhost:5000/details/"+title,{
+				format: "json"
+			})	
+			.done(function(data){
+			
+				e.layer._popup._content = data.result.source_article + '<br>' + data.result.dyad_name;
+			})
+			.fail(function( jqxhr, textStatus, error ) {
+   				var err = textStatus + ", " + error;
+				console.log( "Request failed while getting details: " + err );
+			});
+		}
+	});
+	/******************************************/
 
 });
 </script>

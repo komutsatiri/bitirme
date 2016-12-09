@@ -1,10 +1,15 @@
--Database is needed [red]
--Searching data by using by details [red] (done)
--A slider to filter data by year [red]
--Marker's color should change depends on type-of-violence value [red]
--Consider event_clarity when showing details in popup [red]
--Create a page which explains about map and data [red]
--Comparing two events  [blue]
--A textbox which explains type of violence numbers at the bottom-right [green]
--The map has details more than needed, need a less colorful, less details one [green]
--Cool tiles: http://{s}.tiles.mapbox.com/v3/gvenech.m13knc8e/{z}/{x}/{y}.png [green]
+-Database is needed [red] (done)
+-Searching data by using by details [red]
+-A slider to filter data by year [red] (done)
+-Filtering data with dropdown menus, dyad_new_id, deaths_a and deaths_b will be used [red]
+
+-The tile has details more than needed, need a lightweight tile [blue]
+-When just one marker presents, load an image explains that there is only an event at the location 
+[blue]
+-Create a page which explains about map and data [blue]
+
+-Comparing two events  [green]
+-Doing zoom in/out is not fast enough, need a solution [green]
+-Marker's color should change depends on type-of-violence value [green]
+-Consider event_clarity when showing details in popup [green]
+
