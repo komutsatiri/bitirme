@@ -42,6 +42,7 @@ $(document).ready(function(){
 	}).addTo(map);
 
 	//var marker_title = event_object[key]['id'];//+", "+event_object[key]['year'];
+	var api = 'http://104.236.216.237:5001';
 	var markers = L.layerGroup();
 	var layer_support = L.markerClusterGroup.layerSupport();
 	var slider_control = null;
@@ -56,7 +57,7 @@ $(document).ready(function(){
 	dyad_control.onAdd = function (map) {
 
 		var container = L.DomUtil.create('div', 'dyad_control');
-		$.getJSON("http://localhost:5000/dyads",{
+		$.getJSON(api + "/dyads",{
 			format: "json",
 		})	 
 		.done(function(data){
@@ -83,7 +84,7 @@ $(document).ready(function(){
 	death_control.onAdd = function (map) {
 
 		var container = L.DomUtil.create('div', 'death_control');
-		$.getJSON("http://localhost:5000/death_range",{
+		$.getJSON(api + "/death_range",{
 			format: "json",
 		})	 
 		.done(function(data){
@@ -147,7 +148,7 @@ $(document).ready(function(){
 	function dyad_changed(e){
 
 		dyad_val = $('#dyad_list').val();
-		$.getJSON("http://localhost:5000/markers/dyad="+dyad_val,{
+		$.getJSON(api + "/markers/dyad=" + dyad_val,{
 			format: "json"
 		})	
 		.done(function(data){
@@ -166,8 +167,8 @@ $(document).ready(function(){
 		console.log(dyad_val);
 		if(dyad_val != null)
 		{
-			$.getJSON("http://localhost:5000/markers/dyad="+dyad_val
-				+"&min="+min_max[0]+"&max="+min_max[1],{
+			$.getJSON(api + "/markers/dyad=" + dyad_val
+				+ "&min=" + min_max[0] + "&max=" + min_max[1],{
 			format: "json"
 			})	
 			.done(function(data){
@@ -193,7 +194,7 @@ $(document).ready(function(){
 			
 		if (popup_content == 'init')
 		{	
-			$.getJSON("http://localhost:5000/details/"+title,{
+			$.getJSON(api+ "/details/" + title,{
 				format: "json"
 			})	
 			.done(function(data){
