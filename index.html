@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Bitirme</title>	
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.0-beta.2/leaflet.css" />
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" />
+<link rel="stylesheet" href="./css/MarkerCluster.css" />
+<link rel="stylesheet" href="./css/MarkerCluster.Default.css" />
+<link rel="stylesheet" href="./css/leaflet-search.src.css" />
+<link rel="stylesheet" href="./css/foo.css" />
+<!--jquery js-->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+	  	integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
+		crossorigin="anonymous">
+</script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.2/jquery.ui.touch-punch.min.js"></script>	
+<!--leaflet js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.0-beta.2/leaflet.js"></script>
+<script src="./js/leaflet-search.src.js"></script>
+<script src="./js/leaflet.markercluster-src.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster.layersupport@1.0.2/dist/leaflet.markercluster.layersupport.js"></script>
+<script src="./js/leaflet-sliderControl.js"></script>
+
+</head>
+
+<body>
+<div id="mapi"></div>
+
+
+<script type="text/javascript">
+$(document).ready(function(){
+
+	/*********** Initial config ***********/
+	var map = L.map('mapi').setView([38.99357, 35.24414], 6);
+	L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+		attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    	maxZoom: 14,
+    	minZoom: 4,
+	}).addTo(map);
+
+
+	//var api = 'http://localhost:5001';
+	var api = 'http://104.236.216.237:5001';
+	var markers = L.layerGroup();
+	var layer_support = L.markerClusterGroup.layerSupport();
+	var slider_control = null;
+	var dyad_val = null;
+	
+   	/****************************************/
+
+	/*********** Dropdown menus init config *************/
+	var dyad_control = L.control({position: 'topright'});
+	var death_control = L.control({position: 'topright'});
+
+	dyad_control.onAdd = function (map) {
+
+		var container = L.DomUtil.create('div', 'dyad_control');
+		$.getJSON(api + "/dyads",{
+			format: "json",
+		})	 
+		.done(function(data){
+				
+			var temp = data.result		
+			var dyad_select = document.createElement('select');
+			dyad_select.id = "dyad_list"; 
+			dyad_select.onchange = dyad_changed; 
+			$.each(temp, function(i,item){
+				dyad_select[dyad_select.length] = new Option(item, i, false, false);
+			});
+			container.appendChild(dyad_select);
+			//allow a user to select a single option
+			container.firstChild.selectedIndex = -1	;
+			container.firstChild.onmousedown = 
+			container.firstChild.ondblclick = 
+			L.DomEvent.stopPropagation;
+							
+		});
+			
+	return container;
+	};
+
+	death_control.onAdd = function (map) {
+
+		var container = L.DomUtil.create('div', 'death_control');
+		$.getJSON(api + "/death_range",{
+			format: "json",
+		})	 
+		.done(function(data){
+				
+			var temp = data.result		
+			var death_select = document.createElement('select');
+			death_select.id = "death_list"; 
+			death_select.onchange = death_changed; 
+			$.each(temp, function(i,item){
+				death_select[death_select.length] = new Option(item, item, false, false);
+			});
+			container.appendChild(death_select);
+				
+			container.firstChild.selectedIndex = -1	;
+			container.firstChild.onmousedown = 
+			container.firstChild.ondblclick = 
+			L.DomEvent.stopPropagation;
+							
+		});
+			
+	return container;
+	};
+	/****************************************/
+
+	/*********** Populate markers **********/
+	function populate(event_object,layer){
+		//if 'markers' layer has markers in it, delete them first
+		markers = L.layerGroup();
+		//then clear the map from markers	
+		layer_support.clearLayers();
+		for (var key in event_object){
+				var event = event_object[key];
+				var marker = L.marker([event.lat, event.lon],{title : event.id, time: event.time.toString()});
+				marker.bindPopup("init");
+				marker.addTo(layer);
+		}
+		// add new clustered markers to the map
+		layer_support.addTo(map).checkIn(layer);
+		//if slider_control is defined, remove from the map
+		if (slider_control != null ){
+
+			map.removeControl(slider_control);
+		}
+		// define slider_control again, add to the map
+		slider_control = L.control.sliderControl({
+				position: "topright",
+   				layer: layer,
+   				follow: 600,
+   				range: true
+  	 		});
+			map.addControl(slider_control);
+			slider_control.startSlider();	
+	}	
+
+	/*********** Show dropdown menus*********/
+	dyad_control.addTo(map);
+	death_control.addTo(map);
+	/****************************************/
+
+	/************ Event listeners  ************/
+	//dyad drop-down menu
+	function dyad_changed(e){
+
+		// reset the second drop-down menu
+		$('#death_list').each(function(){ 
+			this.selectedIndex = -1; 
+		});
+		dyad_val = $('#dyad_list').val();
+		$.getJSON(api + "/markers/dyad=" + dyad_val,{
+			format: "json"
+		})	
+		.done(function(data){
+
+			populate(data.result,markers);
+			
+		})
+		.fail(function( jqxhr, textStatus, error ) {
+   			var err = textStatus + ", " + error;
+			console.log( "Request failed while getting markers: " + err );
+		});
+	}
+	//death drop-down menu
+	function death_changed(e){
+
+		var death_val = $('#death_list').val();
+		var min_max = death_val.split('-');
+		console.log(dyad_val);
+		if(dyad_val != null)
+		{
+			$.getJSON(api + "/markers/dyad=" + dyad_val
+				+ "&min=" + min_max[0] + "&max=" + min_max[1],{
+			format: "json"
+			})	
+			.done(function(data){
+				// if no events returned, inform the user
+				if(data.records == 0)
+				{	
+					alert('No events found which has a number of death between ' + min_max[0] + ' and ' + min_max[1]);
+					$('#death_list').each(function(){ 
+						this.selectedIndex = -1; 
+					});
+				}	
+				// then populate markers anyway	
+				populate(data.result,markers);
+			
+			})
+			.fail(function( jqxhr, textStatus, error ) {
+   				var err = textStatus + ", " + error;
+				console.log( "Request failed while getting markers: " + err );
+			});	
+		}
+		else
+			console.log('please select dyad first');
+
+	}
+	//Pop-up binding
+	layer_support.on('mouseover', function(e){
+	
+		var el = $(e.layer.options),
+			title = el.attr("title");
+		var popup_content = e.layer._popup._content;
+			
+		if (popup_content == 'init')
+		{	
+			$.getJSON(api+ "/details/" + title,
+			{
+				format: "json"
+			})	
+			.done(function(data){
+			
+				e.layer._popup._content = 'Source article: ' + data.result.source_article
+				 + '<br>Location: ' + data.result.where_coordinates
+				 + '<br>Deaths: <table><tr><td>' + data.result.side_a + '</td><td>' + data.result.deaths_a + '</td></tr>'  
+				 + '<tr><td>' + data.result.side_b + '</td><td>' + data.result.deaths_b + '</td></tr>'
+				 + '<tr><td>' + 'Civilians' + '</td><td>' + data.result.deaths_civilians + '</td></tr>'
+				 + '<tr><td>' + 'Unknown' + '</td><td>' + data.result.deaths_unknown + '</td></tr></table>';
+			})
+			.fail(function( jqxhr, textStatus, error ) {
+   				var err = textStatus + ", " + error;
+				console.log( "Request failed while getting details: " + err );
+			});
+		}
+	});
+	/******************************************/
+
+});
+</script>
+</body>
+</html>
