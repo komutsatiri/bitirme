@@ -42,7 +42,8 @@ $(document).ready(function(){
 	}).addTo(map);
 
 	//var marker_title = event_object[key]['id'];//+", "+event_object[key]['year'];
-	var api = 'http://104.236.216.237:5001';
+	//var api = 'http://104.236.216.237:5001';
+	var api = 'http://localhost:5001';
 	var markers = L.layerGroup();
 	var layer_support = L.markerClusterGroup.layerSupport();
 	var slider_control = null;
@@ -97,7 +98,7 @@ $(document).ready(function(){
 				death_select[death_select.length] = new Option(item, item, false, false);
 			});
 			container.appendChild(death_select);
-			//allow a user to select a single option
+				
 			container.firstChild.selectedIndex = -1	;
 			container.firstChild.onmousedown = 
 			container.firstChild.ondblclick = 
@@ -145,8 +146,13 @@ $(document).ready(function(){
 	/****************************************/
 
 	/************ Event listeners  ************/
+	//dyad drop-down menu
 	function dyad_changed(e){
 
+		// reset the second drop-down menu
+		$('#death_list').each(function(){ 
+			this.selectedIndex = -1; 
+		});
 		dyad_val = $('#dyad_list').val();
 		$.getJSON(api + "/markers/dyad=" + dyad_val,{
 			format: "json"
@@ -161,7 +167,9 @@ $(document).ready(function(){
 			console.log( "Request failed while getting markers: " + err );
 		});
 	}
+	//death drop-down menu
 	function death_changed(e){
+
 		var death_val = $('#death_list').val();
 		var min_max = death_val.split('-');
 		console.log(dyad_val);
@@ -172,8 +180,16 @@ $(document).ready(function(){
 			format: "json"
 			})	
 			.done(function(data){
-
-			populate(data.result,markers);
+				// if no events returned, inform the user
+				if(data.records == 0)
+				{	
+					alert('No events found which has a number of death between ' + min_max[0] + ' and ' + min_max[1]);
+					$('#death_list').each(function(){ 
+						this.selectedIndex = -1; 
+					});
+				}	
+				// then populate markers anyway	
+				populate(data.result,markers);
 			
 			})
 			.fail(function( jqxhr, textStatus, error ) {
@@ -185,7 +201,7 @@ $(document).ready(function(){
 			console.log('please select dyad first');
 
 	}
-
+	//Pop-up binding
 	layer_support.on('mouseover', function(e){
 	
 		var el = $(e.layer.options),
@@ -194,12 +210,17 @@ $(document).ready(function(){
 			
 		if (popup_content == 'init')
 		{	
-			$.getJSON(api+ "/details/" + title,{
+			$.getJSON(api+ "/details/" + title,
+			{
 				format: "json"
 			})	
 			.done(function(data){
 			
-				e.layer._popup._content = data.result.source_article + '<br>' + data.result.dyad_name;
+				e.layer._popup._content = data.result.source_article + '<br>'
+				 + '<table><caption>Deaths:</caption><tr><td>' + data.result.side_a + '</td><td>' + data.result.deaths_a + '</td></tr>'  
+				 + '<tr><td>' + data.result.side_b + '</td><td>' + data.result.deaths_b + '</td></tr>'
+				 + '<tr><td>' + 'Civilians' + '</td><td>' + data.result.deaths_civilians + '</td></tr>'
+				 + '<tr><td>' + 'Unknown' + '</td><td>' + data.result.deaths_unknown + '</td></tr></table>';
 			})
 			.fail(function( jqxhr, textStatus, error ) {
    				var err = textStatus + ", " + error;
