@@ -1,7 +1,7 @@
 -Database is needed [red] (done)
 -Searching data by using by details [red]
 -A slider to filter data by year [red] (done)
--Filtering data with dropdown menus, dyad_new_id, deaths_a and deaths_b will be used [red]
+-Filtering data with dropdown menus, dyad_new_id, deaths_a and deaths_b will be used [red] (done)
 
 -The tile has details more than needed, need a lightweight tile [blue]
 -When just one marker presents, load an image explains that there is only an event at the location 
