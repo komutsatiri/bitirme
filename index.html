@@ -41,9 +41,9 @@ $(document).ready(function(){
     	minZoom: 4,
 	}).addTo(map);
 
-	//var marker_title = event_object[key]['id'];//+", "+event_object[key]['year'];
-	//var api = 'http://104.236.216.237:5001';
-	var api = 'http://localhost:5001';
+
+	//var api = 'http://localhost:5001';
+	var api = 'http://104.236.216.237:5001';
 	var markers = L.layerGroup();
 	var layer_support = L.markerClusterGroup.layerSupport();
 	var slider_control = null;
@@ -216,8 +216,9 @@ $(document).ready(function(){
 			})	
 			.done(function(data){
 			
-				e.layer._popup._content = data.result.source_article + '<br>'
-				 + '<table><caption>Deaths:</caption><tr><td>' + data.result.side_a + '</td><td>' + data.result.deaths_a + '</td></tr>'  
+				e.layer._popup._content = 'Source article: ' + data.result.source_article
+				 + '<br>Location: ' + data.result.where_coordinates
+				 + '<br>Deaths: <table><tr><td>' + data.result.side_a + '</td><td>' + data.result.deaths_a + '</td></tr>'  
 				 + '<tr><td>' + data.result.side_b + '</td><td>' + data.result.deaths_b + '</td></tr>'
 				 + '<tr><td>' + 'Civilians' + '</td><td>' + data.result.deaths_civilians + '</td></tr>'
 				 + '<tr><td>' + 'Unknown' + '</td><td>' + data.result.deaths_unknown + '</td></tr></table>';
